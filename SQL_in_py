@@ -1,0 +1,141 @@
+#Installations, imports, and setup of SQL db
+!pip install sqlalchemy
+!pip install psycopg2
+
+from sqlalchemy import create_engine
+import math
+import pandas as pd
+
+#Database credentials 
+postgres_user = 'dabc_student'
+postgres_pw = '7*.8G9QH21'
+postgres_host = '142.93.121.174'
+postgres_port = '5432'
+postgres_db = 'dvdrentals'
+
+engine = create_engine('postgresql://{}:{}@{}:{}/{}'.format(postgres_user, postgres_pw, postgres_host, postgres_port, postgres_db))
+
+
+
+
+
+
+#1. How many movies are released for each rating?
+#execute SQL statement again
+rentals = engine.execute('select count(*), rating from film group by rating')
+
+#dispose the connection
+engine.dispose()
+
+#fecthall() to get a list of rows from results
+rows = rentals.fetchall()
+
+#process the list of rows
+for row in rows:
+  print(row)
+  
+
+
+
+
+
+#2. What is the average rental duration for each rating?
+rental_length = engine.execute('''SELECT rating, round(avg(rental_duration),2) as avg_rental_duration FROM film GROUP BY rating ORDER BY rating''')
+#Now think about how to get avg per rating.
+
+rows = rental_length.fetchall()
+
+for row in rows:
+  print(row['rating'],row['avg_rental_duration'])
+  
+#SLQ querry, avg per rating
+sql = '''SELECT rating, round(avg(rental_duration),2) FROM film GROUP BY rating ORDER BY rating'''
+
+results = pd.read_sql_query(sql, con=engine)
+
+engine.dispose()
+
+results.head()
+
+
+
+
+
+
+#3. What is the mean movie length? Calculate this by defining a function.
+movie_length = engine.execute('''SELECT length FROM film ''')
+
+rows = movie_length.fetchall()
+lengths = [x['length'] for x in rows]
+
+engine.dispose
+
+def mean(numbers):
+  total_sum = 0 #initialize sum to zero
+  for n in numbers:
+    total_sum += n #add numbers in array
+  count = len(numbers) #find length of array
+  avg = total_sum / count #calculate mean
+  return avg #return restult
+
+print('The mean length of a movie is {}'.format(mean(lengths)))
+
+
+
+
+
+
+#4. What is the median movie length? Calculate this by defining a function.
+
+movie_length = engine.execute('''SELECT length FROM film ''')
+
+rows = movie_length.fetchall()
+lengths = [x['length'] for x in rows]
+
+engine.dispose
+
+def median(numbers):
+  numbers.sort()  # sort the list of numbers
+  count = len(numbers) # get the length of the array
+  isEven = count % 2 == 0 # check if this list is of even length
+  
+  if (isEven):
+    # find the two numbers in the middle of the array
+    mid = math.floor( count / 2 )
+    a = numbers[mid]
+    b = numbers[mid + 1]
+    # find the average of these two numbers
+    ans = (a + b) / 2
+  else:
+    ans = numbers[math.floor( count / 2 )]
+ 
+  return ans
+
+print('The median length of a movie is {}'.format(median(lengths)))
+
+
+
+
+
+
+#5. Calculate the standard deviation of the movie lengths. Calculate this by defining a function.
+
+movie_length = engine.execute('''SELECT length FROM film ''')
+
+rows = movie_length.fetchall()
+lengths = [x['length'] for x in rows]
+
+engine.dispose
+
+def standard_deviation(numbers):
+  X_bar = mean(numbers)
+  N = len(numbers)
+  total_sum = 0
+  for X in numbers:
+    diff = X - X_bar
+    squared = math.pow(diff, 2)
+    total_sum += squared
+  sigma = math.sqrt(total_sum / (N - 1))  
+  return sigma
+
+print('The standard deviation of the movie lengths is {}'.format(standard_deviation(lengths)))
