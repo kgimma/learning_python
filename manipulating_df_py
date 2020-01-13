@@ -1,0 +1,86 @@
+#imports and setup
+from sqlalchemy import create_engine
+import pandas as pd
+
+# Database credentials
+postgres_user = 'dabc_student'
+postgres_pw = '7*.8G9QH21'
+postgres_host = '142.93.121.174'
+postgres_port = '5432'
+postgres_db = 'kickstarterprojects'
+
+# use the credentials to start a connection
+engine = create_engine('postgresql://{}:{}@{}:{}/{}'.format(
+    postgres_user, postgres_pw, postgres_host, postgres_port, postgres_db))
+
+ksprojects_df = pd.read_sql_table('ksprojects', con=engine)
+
+# remove the connection
+engine.dispose()
+
+# print 2 rows to see what we got
+ksprojects_df.head(10)
+
+
+
+### 1. How many rows of data are in the DF?
+ksprojects_df.shape
+
+
+
+### 2. What are the names and data typed of the columns
+
+ksprojects_df.info()
+
+
+
+### 3.  Do any columns contain null values?
+
+null_columns=ksprojects_df.columns[ksprojects_df.isnull().any()]
+ksprojects_df[null_columns].isnull().sum()
+
+
+
+### 4. Find all successful documentary projects and sort by amount pledged. Top 10 highest pledges. 
+
+#restrict to only rows with successful documentaries
+ks_successful_df = (ksprojects_df['state'] == 'successful') & (ksprojects_df['category'] == 'Documentary')
+
+ks_successful_df.head(2)
+
+successful_projects = ksprojects_df.iloc[ks_successful_df.values,[1,2,12]]
+
+successful_projects_asc = successful_projects.sort_values(by='pledged')
+
+successful_projects_asc.head(2)
+
+
+
+### 5. Create new column average_per_backer and set 
+
+#value = total amount pledged / number of backers
+#What happens to rows with 0 backers?
+#How can this be dealt with?
+
+ksprojects_df = ksprojects_df.assign(average_per_backer = ksprojects_df.pledged / ksprojects_df.backers)
+
+ksprojects_df.head()
+
+
+
+### 6. Drop all rows with 0 backers then repeat the previous exercise.
+
+# create a Series of booleans
+no_non_backers = ksprojects_df['backers'] > 0
+no_non_backers.head()
+
+ksprojects_df.iloc[no_non_backers.values]
+
+
+
+### 7. Create a crosstab to get a count of records for each combination of state and category.
+ksprojects_df_no_duplicates = ksprojects_df.drop_duplicates(['id'])
+ksprojects_df_no_duplicates.shape
+
+#provide two colomns and use pandas
+pd.crosstab(ksprojects_df_no_duplicates['state'], ksprojects_df_no_duplicates['category'])
