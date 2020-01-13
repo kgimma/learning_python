@@ -1,0 +1,112 @@
+### 1. Create a function that reverses a string. 
+
+#For example, given the string "forward", your function should return "drawrof". 
+#Assume all inputs are strings.
+
+def reverse(string):
+  string_reversed = ''.join(reversed(string))
+  return string_reversed
+print(reverse('forward'))
+
+
+
+### 2. Create a SQL query to combine all four tables in the bitcoinhistoricaldata database. 
+###    Load the query results into a dataframe in Pandas, and do some exploratory data analysis. 
+###    Use the same user credentials as in earlier checkpoints.
+
+# Imports
+!pip install seaborn==0.9.0 
+from sqlalchemy import create_engine
+import pandas as pd
+import seaborn as sns 
+import numpy as np
+from scipy import stats
+import matplotlib.pyplot as plt
+import datetime as dt
+sns.set()
+
+# suppress warnings (warnings do not prevent the code from executing)
+import warnings
+warnings.filterwarnings("ignore")
+
+# Database credentials
+postgres_user = 'dabc_student'
+postgres_pw = '7*.8G9QH21'
+postgres_host = '142.93.121.174'
+postgres_port = '5432'
+postgres_db = 'bitcoinhistoricaldata'
+
+# use the credentials to start a connection
+engine = create_engine('postgresql://{}:{}@{}:{}/{}'.format(
+    postgres_user, postgres_pw, postgres_host, postgres_port, postgres_db))
+
+sql = '''
+select * 
+from bitflyer
+UNION ALL 
+select *
+from bitstamp
+UNION ALL 
+select *
+from coinbase
+UNION ALL 
+select *
+from coincheck
+  '''
+
+#runable query
+data = pd.read_sql_query(sql, con=engine)
+
+
+# remove the connection
+engine.dispose()
+
+# info
+#pd.concat(bitcoin_data)
+
+data.head(10)
+
+
+
+### Explore the distributions of your variables and at least one correlation. 
+
+#Nulls? --> NO NULLS
+null_columns=data.columns[data.isnull().any()]
+data[null_columns].isnull().sum()
+
+
+
+### Explore Distribution
+data.describe()
+
+
+
+### Does the opening price influence the weighted price of bitcoin sold??
+
+open_high = data.iloc[(data['open'] > 18009.000000).values]
+
+open_low = data.iloc[(data['open'] < 18009.000000).values]
+
+#Correlation
+data[['weighted_price', 'open']].corr()
+#open_high['weighted_price'].corr(open_low['weighted_price'])
+#Why doesn't this work?
+
+#instead of making new DFs, create new series. 
+
+#Ttest
+
+stats.ttest_ind(open_high.weighted_price, open_low.weighted_price)
+
+#Because p-value <.05, there is sig diff in mean weighted_price
+#Because statistic is positive, 
+#mean wieghted_price in high open price is significantly larger than mean weighted_price in low open price. 
+
+
+
+### 3. Try to find something interesting to say about the data, and use visualizations to support your argument. 
+
+plt.figure(figsize = (15,5))
+#plt.xlim(2011,2017)
+sns.scatterplot(x="timestamp", y="open", hue="volume_btc", data=data)
+
