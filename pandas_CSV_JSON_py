@@ -1,0 +1,63 @@
+#imports and CSV file
+import pandas as pd
+from sqlalchemy import create_engine
+
+df = pd.read_csv('https://tf-assets-prod.s3.amazonaws.com/tf-curric/data-analytics-bootcamp/nyc_baby_names.csv')
+
+df.info()
+
+df.head()
+
+
+#show shape and columns of file
+def printDataFrame(df):
+  print('The shape of this DataFrame is {}'.format(df.shape))
+  print('The columns in this DataFrame are {}'.format(df.columns))
+  print('The info:')
+  print(df.info())
+
+tweets_df = pd.read_json('https://tf-assets-prod.s3.amazonaws.com/tf-curric/data-analytics-bootcamp/tweets.json')
+
+printDataFrame(tweets_df)
+tweets_df.head()
+
+
+
+### Form database
+
+#database credentials
+postgres_user = 'dabc_student'
+postgres_host = '142.93.121.174'
+postgres_pw = '7*.8G9QH21'
+postgres_port = '5432'
+postgres_db = 'department_of_education'
+  
+# Create a connection
+engine = create_engine('postgresql://{}:{}@{}:{}/{}'.format(
+    postgres_user, postgres_pw, postgres_host, postgres_port, postgres_db))
+
+# Use a database table to create a DataFrame
+doe_df = pd.read_sql_table('finance', con=engine)
+
+# remove the connection
+engine.dispose()
+
+# Lets see some details of the DataFrame
+printDataFrame(doe_df)
+doe_df.head()
+
+
+
+### Retrieve all data from finance table
+
+# Execute a query and create a DataFrame
+finance_df = pd.read_sql_query('''SELECT * from finance''', con=engine)
+
+# remove the connection
+engine.dispose()
+
+# Lets see some details of the DataFrame
+printDataFrame(finance_df)
+finance_df.head()
+
+
