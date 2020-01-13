@@ -1,0 +1,15 @@
+apikey = 'e3a6b510-accc-11e9-bf51-2509e8d01e79'
+url = 'https://api.harvardartmuseums.org/person?q=culture:British' 
+query = {'apikey':apikey, 'size':1849} 
+response = requests.get(url,params=query)
+
+if response.ok: 
+  data = response.json() 
+  raw_records = data['records']
+  for records in raw_records: 
+    print("Person Name: {} \t Birthplace: {}".format(records['displayname'], records['birthplace'])) 
+else: 
+  print("Something went wrong")
+
+print(data)
+
