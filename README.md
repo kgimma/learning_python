@@ -12,6 +12,7 @@ Here I practiced the following:
 - Using Pandas
 - Manipulating Dataframes
 - Finding statistics such as p-value, confidence interval, cohen´s d, etc.
+- Creating compelling visualizations
 
 
 
