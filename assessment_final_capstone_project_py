@@ -1,0 +1,238 @@
+### Imports and setup
+
+import pandas as pd
+import numpy as np
+from scipy import stats
+import seaborn as sns; sns.set()
+
+import matplotlib.pyplot as plt
+import math
+
+
+# suppress warnings (warnings do not prevent the code from executing)
+import warnings
+warnings.filterwarnings("ignore")
+
+#importing file
+from google.colab import files
+uploaded = files.upload()
+
+import io
+farc_df = pd.read_csv(io.BytesIO(uploaded['FARC_df_clean.csv']))
+# Dataset is now stored in a Pandas Dataframe
+
+farc_df.head(10)
+
+### viewing data
+
+farc_df.info()
+
+#Do nulls exist?
+farc_df.isnull().sum()
+
+#remove nulls -- all nulls were at the tail of the data
+farc_df = farc_df.dropna()
+
+#all nulls were at tail end. This is a check to see if they were removed
+farc_df.tail()
+
+#explore distribution
+farc_df.describe()
+
+
+
+### t tests to check hypotheses 
+
+#hypotheses
+#the number of armed attacks against the Colombian armed forces decreased after the start of the official peace talks.
+#The number of armed attacks against civilians decreased after the start of the official peace talks.
+#The number of homocides decreased after the start of the official peace talks.
+#The number of forced disappearances decreased after the start of the official peace talks.
+#The population increased after the start of the official peace talks.
+#The number of responses from Colombian armed forces decreased after the start of the official peace talks.
+
+
+#2012 vs 2013 armed actions t-test
+stats.ttest_ind(farc_df['Acciones armadas con participación FARC 2012'],farc_df['Acciones armadas con participación FARC 2013'],nan_policy='omit')
+
+
+#2012 vs 2013 armed actions t-test
+stats.ttest_ind(farc_df['Ataques a la población civil 2012'],farc_df['Ataques a la población civil 2013'],nan_policy='omit')
+
+
+#2012 vs 2013 homocides t-test
+stats.ttest_ind(farc_df['Homicidios 2012 total'],farc_df['Homicidios 2013 total'], nan_policy='omit')
+
+
+#2012 vs 2013 forces disappearances
+stats.ttest_ind(farc_df['Desaparición forzada 2012 '],farc_df['Desaparición forzada 2013 total'],nan_policy='omit')
+
+
+#2012 vs 2013 population t-test
+stats.ttest_ind(farc_df['Población 2013'],farc_df['Población 2012'],nan_policy='omit')
+
+
+#2012 vs 2013 military response needed for armed actions
+stats.ttest_ind(farc_df['MAP/MUSE 2012 total'],farc_df['MAP/MUSE 2013 total'],nan_policy='omit')
+
+### RESULTS
+# Each t-test rejected the alternate hypothesis except forced disappearances, as this was the only p-value under 0.05. 
+
+#Some factors saw an increase in the year after the official peace talks began. 
+#This can be seen in the following visualizations. 
+#Box plots were chosen as they are the the best snapshot to quickly and easily see changes from year to year. 
+
+
+
+### VISUALIZATIONS
+
+
+
+## 2012 vs 2013 Armed Actions Against Colombian Armed Forces
+
+#2012 Armed Actions Against Colombian Armed Forces by Department
+plt.figure(figsize = (30,10))
+datasort = farc_df.sort_values('Acciones armadas con participación FARC 2012', ascending = False)
+sns.set_style("white")
+sns.barplot(x = 'Acciones armadas con participación FARC 2012', y = 'Departamento', data = farc_df)
+plt.title('2012 Armed Actions Against Colombian Armed Forces by Department')
+plt.xlabel('2012 Armed Actions Against Colombian Armed Forces')
+plt.ylabel('Department')
+sns.despine()
+
+#2013 Armed Actions Against Colombian Armed Forces by Department
+plt.figure(figsize = (30,10))
+datasort = farc_df.sort_values('Acciones armadas con participación FARC 2013', ascending = False)
+sns.set_style("white")
+sns.barplot(x = 'Acciones armadas con participación FARC 2013', y = 'Departamento', data = farc_df)
+plt.title('2013 Armed Actions Against Colombian Armed Forces by Department')
+plt.xlabel('Armed Actions Against Colombian Armed Forces')
+plt.ylabel('Department')
+sns.despine()
+
+
+
+## 2012 vs 2013 Attacks Against Colombian Civilians
+
+#2012 Attacks Against Colombian Civilians by Department 
+plt.figure(figsize = (15,10))
+datasort = farc_df.sort_values('Ataques a la población civil 2012', ascending = False)
+sns.set_style("white")
+sns.barplot(x="Ataques a la población civil 2012", y="Departamento", data=farc_df)
+plt.title('2012 Attacks Against Colombian Civilians by Department ')
+plt.xlabel('Attacks Against Colombian Civilians by Department ')
+plt.ylabel('Department')
+sns.despine()
+
+#2012 Attacks Against Colombian Civilians by Department  
+plt.figure(figsize = (15,10))
+datasort = farc_df.sort_values('Ataques a la población civil 2013', ascending = False)
+sns.set_style("white")
+sns.barplot(x="Ataques a la población civil 2013", y="Departamento", data=farc_df)
+plt.title('2012 Attacks Against Colombian Civilians by Department ')
+plt.xlabel('Attacks Against Colombian Civilians')
+plt.ylabel('Department')
+sns.despine()
+
+
+
+## 2012 vs 2013 Homocides
+
+#2012 Homocides by Department
+plt.figure(figsize = (30,10))
+plt.title('2012 Homocides by Department')
+plt.xlabel('Homocides')
+plt.ylabel('Department')
+datasort = farc_df.sort_values('Homicidios 2012 total', ascending = False)
+sns.set_style("white")
+ax = sns.barplot(x ="Homicidios 2012 total", y = "Departamento", data=farc_df)
+plt.title('2012 Homocides by Department')
+plt.xlabel('Homocides')
+plt.ylabel('Department')
+sns.despine()
+
+#2013 Homocides by Department
+plt.figure(figsize = (30,10))
+datasort = farc_df.sort_values('Homicidios 2012 total', ascending = False)
+sns.set_style("white")
+ax = sns.barplot(x ="Homicidios 2013 total", y = "Departamento", data=farc_df)
+plt.title('2013 Homocides by Department')
+plt.xlabel('Homocides')
+plt.ylabel('Department')
+sns.despine()
+
+
+
+## 2012 vs 2013 Foced Disappearances
+
+#2012 Forced Disappearances by Department
+plt.figure(figsize = (30,10))
+datasort = farc_df.sort_values('Desaparición forzada 2012 ', ascending = False)
+sns.set_style("white")
+ax = sns.barplot(x ="Desaparición forzada 2012 ", y = "Departamento", data=farc_df)
+plt.title('2012 Forced Disappearances by Department')
+plt.xlabel('Forced Disappearances')
+plt.ylabel('Department')
+sns.despine()
+
+#2013 Forced Disappearances by Department
+plt.figure(figsize = (30,10))
+datasort = farc_df.sort_values('Desaparición forzada 2013 total', ascending = False)
+sns.set_style("white")
+ax = sns.barplot(x ="Desaparición forzada 2013 total", y = "Departamento", data=farc_df)
+plt.title('2013 Forced Disappearances by Department')
+plt.xlabel('Forced Disappearances')
+plt.ylabel('Department')
+sns.despine()
+
+
+
+## 2012 vs 2013 Population
+
+#2012 Population by Department
+plt.figure(figsize = (30,10))
+datasort = farc_df.sort_values('Población 2012', ascending = False)
+sns.set_style("white")
+ax = sns.barplot(x ="Población 2012", y = "Departamento", data=farc_df)
+plt.title('2012 Population by Department')
+plt.xlabel('Population')
+plt.ylabel('Department')
+sns.despine()
+
+#2013 Population by Department
+plt.figure(figsize = (30,10))
+datasort = farc_df.sort_values('Población 2013', ascending = False)
+sns.set_style("white")
+ax = sns.barplot(x ="Población 2013", y = "Departamento", data=farc_df)
+plt.title('2013 Population by Department')
+plt.xlabel('Population')
+plt.ylabel('Department')
+sns.despine()
+
+
+
+## 2012 vs 2013 Colombian Armed Forces Responses
+
+#2012 Military Intervention per Department
+plt.figure(figsize = (15,10))
+datasort = farc_df.sort_values('MAP/MUSE 2012 total', ascending = False)
+sns.set_style("white")
+sns.barplot(x="MAP/MUSE 2012 total", y="Departamento", data=farc_df)
+plt.title('2012 Military Intervention per Department')
+plt.xlabel('Military Intervention')
+plt.ylabel('Department')
+sns.despine()
+
+#2013 Military Intervention per Department
+plt.figure(figsize = (15,10))
+datasort = farc_df.sort_values('MAP/MUSE 2013 total', ascending = False)
+sns.set_style("white")
+sns.barplot(x="MAP/MUSE 2013 total", y="Departamento", data=farc_df)
+plt.title('2013 Military Intervention per Department')
+plt.xlabel('Military Intervention')
+plt.ylabel('Department')
+sns.despine()
+
+
+
+
