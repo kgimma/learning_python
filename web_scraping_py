@@ -1,0 +1,36 @@
+#imports and setup
+from time import time
+from time import sleep
+from random import randint
+from IPython.core.display import clear_output
+from warnings import warn
+from bs4 import BeautifulSoup
+import requests
+
+url = 'https://www.space.com/news'
+response = requests.get(url)
+
+#valid response
+if(response.ok):
+  #get full data from response
+  data = response.text
+  soup = BeautifulSoup(data, 'html.parser')
+  overview = soup.select(".content")
+else:
+  print(response.statuscode)
+
+#define a function to process the page
+lists = []
+def news_stories(soup, news): 
+  for article in overview: 
+    synopsis = article.select_one('.synopsis').get_text().strip('\n')
+    title = article.select_one('.article-name').get_text() 
+    author = article.select_one('.byline').get_text().strip('\n\nBy\n\n')
+    time = article.select_one('.published-date').attrs['datetime'][:10]
+    #can't use get_text because text is inside of attribute -> .attrs
+    news = {'Title': title, 'Author': author, 'Time': time, 'Synopsis': synopsis} 
+    lists.append(news)
+  return lists
+
+print(news_stories(soup,lists))
+
