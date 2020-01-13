@@ -1,0 +1,76 @@
+# Imports
+!pip install seaborn==0.9.0 
+from sqlalchemy import create_engine
+import pandas as pd
+import seaborn as sns 
+import matplotlib.pyplot as plt
+sns.set()
+
+# suppress warnings (warnings do not prevent the code from executing)
+import warnings
+warnings.filterwarnings("ignore")
+
+# Database credentials
+postgres_user = 'dabc_student'
+postgres_pw = '7*.8G9QH21'
+postgres_host = '142.93.121.174'
+postgres_port = '5432'
+postgres_db = 'houseprices'
+
+# use the credentials to start a connection
+engine = create_engine('postgresql://{}:{}@{}:{}/{}'.format(
+    postgres_user, postgres_pw, postgres_host, postgres_port, postgres_db))
+
+house_prices = pd.read_sql('houseprices', con=engine)
+# remove the connection
+engine.dispose()
+
+
+# info
+house_prices.info()
+
+
+
+### 1. Illustrate the distribution of sale price.
+
+house_prices[['saleprice']].describe()
+print('\n')
+
+ax = sns.distplot(house_prices['saleprice'], bins = 40)
+
+#How can I change the size here?
+
+
+
+### 2. Illustrate the distribution of the lotarea.
+
+house_prices[['lotarea']].describe()
+print('\n')
+
+ax = sns.distplot(house_prices['lotarea'], bins = 40)
+
+
+
+### 3. Use a boxplot to illustrate how overallcond affects the sale price.
+
+sns.boxplot(y = 'saleprice', x = 'overallcond', data = house_prices)
+
+#How can I express sales price in $$$?
+
+
+
+### 4. On the same boxplot, highlight the difference between having central air conditioning or not.
+
+sns.boxplot(y = 'saleprice', hue = 'centralair', x = 'overallcond', data = house_prices)
+
+
+
+### 5. Is there a correlation between lotarea and the saleprice?
+sns.set_style("white")
+sns.scatterplot(x="lotarea", y="saleprice", data=house_prices)
+sns.despine()
+
+#no
+
+
+
