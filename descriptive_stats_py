@@ -1,0 +1,139 @@
+# Imports
+from sqlalchemy import create_engine
+import pandas as pd
+from scipy import stats
+import math
+
+# Database credentials
+postgres_user = 'dabc_student'
+postgres_pw = '7*.8G9QH21'
+postgres_host = '142.93.121.174'
+postgres_port = '5432'
+postgres_db = 'houseprices'
+
+# use the credentials to start a connection
+engine = create_engine('postgresql://{}:{}@{}:{}/{}'.format(
+    postgres_user, postgres_pw, postgres_host, postgres_port, postgres_db))
+
+house_prices = pd.read_sql('houseprices', con=engine)
+# remove the connection
+engine.dispose()
+
+
+# print 2 rows to see what we got
+house_prices.head(2)
+
+
+
+### 1. How many rows of data does the table contain?
+
+house_prices.shape
+
+
+
+### 2. Are there any nulls in any columns?
+
+null_columns=house_prices.columns[house_prices.isnull().any()]
+house_prices[null_columns].isnull().sum()
+
+
+
+### 3. How many distinct values are there in the mszoning column?
+
+print(house_prices['mszoning'].nunique())
+print('\n---\n')
+
+# find the frequency of each value in the column
+category_counts = house_prices['mszoning'].value_counts()
+category_counts.head(10)
+
+
+
+### 4. How many distinct values are there in the street column?
+
+print(house_prices['street'].nunique())
+print('\n---\n')
+
+# find the frequency of each value in the column
+category_counts = house_prices['street'].value_counts()
+category_counts.head(10)
+
+
+
+### 5. Describe the range of the saleprice.
+
+house_prices['saleprice'].describe()
+
+
+
+### 6. Describe the range of the lotarea.
+
+house_prices['lotarea'].describe()
+
+
+
+### 7. Is there a statistically significant difference between the prices of houses that have 
+
+#   an open porch versus houses that do not have an open porch? How did you handle null values? 
+#   Hint: use the variable openporchsf. You will need to transform this variable so that it can be used in a t-test.
+
+
+#Correlation
+#porch types : wooddecksf,	openporchsf,	enclosedporch,	threessnporch,	screenporch
+house_prices[['saleprice', 'openporchsf', 'enclosedporch']].corr()
+
+#slight positive correlation btw open porch and sale price (.316)
+
+
+
+### PREPPING T TEST 
+
+#creating valiables - open porch, removing zeros/null
+open_porch_sales_price = house_prices.iloc[(house_prices['openporchsf'] > 0).values]
+open_porch_sales_price.info()
+
+#creating valiables - enclosed porch, removing zeros/null
+not_open_porch_sales_price = house_prices.iloc[(house_prices['openporchsf'] == 0).values]
+not_open_porch_sales_price.info()
+
+
+
+### T TEST
+
+stats.ttest_ind(open_porch_sales_price.saleprice, not_open_porch_sales_price.saleprice)
+
+#Because p-value <.05, there is sig diff in mean saleprice
+#Because statistic is positive, mean open porch sales price is significantly larger than mean closed porch sales price. 
+
+
+#Confidence interval
+
+def get_95_ci(array_1, array_2):
+    sample_1_n = array_1.shape[0]
+    sample_2_n = array_2.shape[0]
+    sample_1_mean = array_1.mean()
+    sample_2_mean = array_2.mean()
+    sample_1_var = array_1.var()
+    sample_2_var = array_2.var()
+    mean_difference = sample_2_mean - sample_1_mean
+    std_err_difference = math.sqrt((sample_1_var/sample_1_n)+(sample_2_var/sample_2_n))
+    margin_of_error = 1.96 * std_err_difference
+    ci_lower = mean_difference - margin_of_error
+    ci_upper = mean_difference + margin_of_error
+    return("The difference in means at the 95% confidence interval (two-tail) is between "+str(ci_lower)+" and "+str(ci_upper)+".")
+
+get_95_ci(open_porch_sales_price['saleprice'], not_open_porch_sales_price['saleprice'])
+
+
+
+### 8. Is there a significant correlation between the lotarea and saleprice variables? 
+###    Are they positively or negatively correlated?
+
+print(house_prices['lotarea'].corr(house_prices['saleprice']))
+
+#Positive correlation (0.264)
+
+print(stats.pearsonr(house_prices['lotarea'], house_prices['saleprice']))
+
+#Yes. p-value is very low -- 1.123e-24 -- reject null
+
