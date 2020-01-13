@@ -11,6 +11,7 @@ Here I practiced the following:
 - Making API requests
 - Using Pandas
 - Manipulating Dataframes
+- Finding statistics such as p-value, confidence interval, cohen´s d, etc.
 
 
 
